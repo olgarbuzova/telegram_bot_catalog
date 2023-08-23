@@ -7,7 +7,7 @@ from config_data.config import CUSTOM_COMMANDS, CATEGORY
 
 
 @bot.message_handler(commands=["product_selection"])
-def product_selections(message: Message):
+def product_selections(message: Message) -> None:
     """Функция запускает начало опроса, для выбора категории товаров"""
     bot.set_state(message.from_user.id, Menu.category, message.chat.id)
     bot.send_message(
@@ -15,7 +15,9 @@ def product_selections(message: Message):
 
 
 @bot.callback_query_handler(state=Menu.category, func=lambda call: True)
-def callback_query_category(call):
+def callback_query_category(call) -> None:
+    """Функция принимает ответ от клавиатуры start_menu, сохраняет состояние пользователя и
+    предлогает выбрать следующие действие на клавиатуре commands_menu"""
     if call.data in ("refrigerator", "dishwasher", "washingmachine"):
         bot.send_message(chat_id=call.message.chat.id,
                          text=f"Выбрали {CATEGORY.get(call.data)}. В каком виде показывать?", reply_markup=reply_markup_second)
@@ -26,7 +28,9 @@ def callback_query_category(call):
 
 
 @bot.callback_query_handler(state=Menu.command, func=lambda call: True)
-def callback_query_command(call):
+def callback_query_command(call) -> None:
+    """Функция принимает ответ от клавиатуры commands_menu, в зависимости от ответа сохраняет
+    нужное состояние пользователя и отправляет вопрос пользователю"""
     if call.data in ("low", "high"):
         bot.send_message(chat_id=call.message.chat.id,
                          text="Сколько товаров показывать?\n(можно не больше 10)")
@@ -47,7 +51,9 @@ def callback_query_command(call):
 
 
 @bot.message_handler(state=Menu.quantity_of_goods)
-def get_quantity_of_goods(message: Message):
+def get_quantity_of_goods(message: Message) -> None:
+    """Функция сохраняет состояние пользователя и отправляет пользователю
+    сообщение с информацией о его выборе"""
     if message.text.isdigit():
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data["quantity_of_goods"] = message.text
@@ -65,7 +71,8 @@ def get_quantity_of_goods(message: Message):
 
 
 @bot.message_handler(state=Menu.cost_from)
-def get_cost_from(message: Message):
+def get_cost_from(message: Message) -> None:
+    """Функция сохраняет состояние пользователя и отправляет пользователю вопрос"""
     if message.text.isdigit():
         bot.send_message(message.from_user.id, "Введите цену до")
         bot.set_state(message.from_user.id, Menu.cost_to, message.chat.id)
@@ -77,7 +84,8 @@ def get_cost_from(message: Message):
 
 
 @bot.message_handler(state=Menu.cost_to)
-def get_cost_to(message: Message):
+def get_cost_to(message: Message) -> None:
+    """Функция сохраняет состояние пользователя и отправляет пользователю вопрос"""
     if message.text.isdigit():
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data["cost_to"] = message.text
