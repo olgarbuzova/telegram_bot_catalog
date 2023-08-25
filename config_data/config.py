@@ -8,6 +8,9 @@ else:
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 RAPID_API_KEY = os.getenv("RAPID_API_KEY")
+
+URL = "https://catalog.onliner.by/sdapi/catalog.api/search/"
+
 DEFAULT_COMMANDS = (
     ("start", "Запустить бота"),
     ("help", "Вывести справку"),
