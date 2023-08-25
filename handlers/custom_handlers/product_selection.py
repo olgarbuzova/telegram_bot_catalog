@@ -4,6 +4,8 @@ from keyboards.inline.start_menu import reply_markup_first
 from keyboards.inline.commands_menu import reply_markup_second
 from states.menu_state import Menu
 from config_data.config import CUSTOM_COMMANDS, CATEGORY
+from API.api_handlers import get_list_of_goods, send_info
+from API.set_params import set_params
 
 
 @bot.message_handler(commands=["product_selection"])
@@ -55,16 +57,28 @@ def get_quantity_of_goods(message: Message) -> None:
     """Функция сохраняет состояние пользователя и отправляет пользователю
     сообщение с информацией о его выборе"""
     if message.text.isdigit():
+        if int(message.text) > 10:
+            message.text = "10"
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data["quantity_of_goods"] = message.text
             if data["command"] in ("low", "high"):
                 text = "Будем смотреть {0}\n{1}\nПокажу {2} шт".format(
                     CATEGORY.get(data["category"]), CUSTOM_COMMANDS.get(data["command"]), data["quantity_of_goods"])
                 bot.send_message(message.from_user.id, text)
+                payload = set_params(
+                    data["command"], data["quantity_of_goods"])
+                list_of_goods = get_list_of_goods(data["category"], payload)
+                send_info(list_of_goods, message)
+
             elif data["command"] == "custom":
-                text = "Будем смотреть {0}\nЦена от {1} до {2}/nПокажу {3} шт".format(
+                text = "Будем смотреть {0}\nЦена от {1} до {2}\nПокажу {3} шт".format(
                     CATEGORY.get(data["category"]), data["cost_from"], data["cost_to"], data["quantity_of_goods"])
                 bot.send_message(message.from_user.id, text)
+                payload = set_params(
+                    data["command"], data["quantity_of_goods"], data["cost_from"], data["cost_to"])
+                list_of_goods = get_list_of_goods(data["category"], payload)
+                send_info(list_of_goods, message)
+
     else:
         bot.send_message(message.from_user.id,
                          "Колличество показываемых товаров должно быть числом")
