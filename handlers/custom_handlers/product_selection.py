@@ -6,6 +6,7 @@ from states.menu_state import Menu
 from config_data.config import CUSTOM_COMMANDS, CATEGORY
 from API.api_handlers import get_list_of_goods, send_info
 from API.set_params import set_params
+from database.record_write import record_write
 
 
 @bot.message_handler(commands=["product_selection"])
@@ -64,6 +65,8 @@ def get_quantity_of_goods(message: Message) -> None:
             if data["command"] in ("low", "high"):
                 text = "Будем смотреть {0}\n{1}\nПокажу {2} шт".format(
                     CATEGORY.get(data["category"]), CUSTOM_COMMANDS.get(data["command"]), data["quantity_of_goods"])
+                record_write(message.from_user.id,
+                             message.from_user.username, data)
                 bot.send_message(message.from_user.id, text)
                 payload = set_params(
                     data["command"], data["quantity_of_goods"])
@@ -73,11 +76,15 @@ def get_quantity_of_goods(message: Message) -> None:
             elif data["command"] == "custom":
                 text = "Будем смотреть {0}\nЦена от {1} до {2}\nПокажу {3} шт".format(
                     CATEGORY.get(data["category"]), data["cost_from"], data["cost_to"], data["quantity_of_goods"])
+                record_write(message.from_user.id,
+                             message.from_user.username, data)
                 bot.send_message(message.from_user.id, text)
                 payload = set_params(
                     data["command"], data["quantity_of_goods"], data["cost_from"], data["cost_to"])
                 list_of_goods = get_list_of_goods(data["category"], payload)
                 send_info(list_of_goods, message)
+        bot.delete_state(user_id=message.from_user.id,
+                         chat_id=message.chat.id)
 
     else:
         bot.send_message(message.from_user.id,
