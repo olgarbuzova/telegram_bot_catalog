@@ -14,7 +14,8 @@ URL = "https://catalog.onliner.by/sdapi/catalog.api/search/"
 DEFAULT_COMMANDS = (
     ("start", "Запустить бота"),
     ("help", "Вывести справку"),
-    ("product_selection", "Выбрать товар")
+    ("product_selection", "Выбрать товар"),
+    ("history", "История последних запросов")
 )
 CUSTOM_COMMANDS = {"low": "Список товаров по минимальной цене",
                    "high": "Список товаров по максимальной цене",
