@@ -3,9 +3,9 @@ from telebot.types import Message
 from loader import bot
 
 
-# Эхо хендлер, куда летят текстовые сообщения без указанного состояния
 @bot.message_handler(state=None)
 def bot_echo(message: Message):
+    """Функция отправляет сообщение на текстовые сообщения без указанного состояния"""
     bot.reply_to(
-        message, "Эхо без состояния или фильтра.\n" f"Сообщение: {message.text}"
+        message, "Введите команду из меню или нажмите кнопку.\n" f"Сообщение: {message.text}"
     )
