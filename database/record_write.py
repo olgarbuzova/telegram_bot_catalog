@@ -1,8 +1,10 @@
 from datetime import datetime
+from loguru import logger
 from database.models import History
 from config_data.config import CUSTOM_COMMANDS, CATEGORY
 
 
+@logger.catch
 def record_write(user_id: int, user_name: str, data: dict) -> None:
     """Функция создает запись в таблице в базе данных"""
     text = "{0} ({1}шт)\n{2}".format(CATEGORY.get(

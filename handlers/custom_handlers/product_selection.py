@@ -1,3 +1,4 @@
+from loguru import logger
 from telebot.types import Message
 from loader import bot
 from keyboards.inline.start_menu import reply_markup_first
@@ -21,6 +22,7 @@ def product_selections(message: Message) -> None:
 def callback_query_category(call) -> None:
     """Функция принимает ответ от клавиатуры start_menu, сохраняет состояние пользователя и
     предлогает выбрать следующие действие на клавиатуре commands_menu"""
+    logger.info(f"Пользователь выбрал категорию {CATEGORY.get(call.data)}")
     if call.data in ("refrigerator", "dishwasher", "washingmachine"):
         bot.send_message(chat_id=call.message.chat.id,
                          text=f"Выбрали {CATEGORY.get(call.data)}. В каком виде показывать?", reply_markup=reply_markup_second)
@@ -34,6 +36,7 @@ def callback_query_category(call) -> None:
 def callback_query_command(call) -> None:
     """Функция принимает ответ от клавиатуры commands_menu, в зависимости от ответа сохраняет
     нужное состояние пользователя и отправляет вопрос пользователю"""
+    logger.info(f"Пользователь выбрал {CUSTOM_COMMANDS.get(call.data)}")
     if call.data in ("low", "high"):
         bot.send_message(chat_id=call.message.chat.id,
                          text="Сколько товаров показывать?\n(можно не больше 10)")
@@ -48,6 +51,7 @@ def callback_query_command(call) -> None:
         with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
             data["command"] = call.data
     elif call.data == "back":
+        logger.warning("Пользователь ошибся с категорией!")
         bot.set_state(call.from_user.id, Menu.category, call.message.chat.id)
         bot.send_message(
             call.message.chat.id, "Какой товар будем искать?", reply_markup=reply_markup_first)
@@ -58,7 +62,9 @@ def get_quantity_of_goods(message: Message) -> None:
     """Функция сохраняет состояние пользователя и отправляет пользователю
     сообщение с информацией о его выборе"""
     if message.text.isdigit():
+        logger.info(f"Пользователь хочет видить список из {message.text} шт")
         if int(message.text) > 10:
+            logger.warning("Можем показать только 10 шт!")
             message.text = "10"
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data["quantity_of_goods"] = message.text
@@ -87,6 +93,7 @@ def get_quantity_of_goods(message: Message) -> None:
                          chat_id=message.chat.id)
 
     else:
+        logger.warning("Введено не число!")
         bot.send_message(message.from_user.id,
                          "Колличество показываемых товаров должно быть числом")
 
@@ -95,11 +102,13 @@ def get_quantity_of_goods(message: Message) -> None:
 def get_cost_from(message: Message) -> None:
     """Функция сохраняет состояние пользователя и отправляет пользователю вопрос"""
     if message.text.isdigit():
+        logger.info(f"Цена от {message.text}")
         bot.send_message(message.from_user.id, "Введите цену до")
         bot.set_state(message.from_user.id, Menu.cost_to, message.chat.id)
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data["cost_from"] = message.text
     else:
+        logger.warning("Введено не число!")
         bot.send_message(message.from_user.id,
                          "Цена должна быть числом")
 
@@ -108,6 +117,7 @@ def get_cost_from(message: Message) -> None:
 def get_cost_to(message: Message) -> None:
     """Функция сохраняет состояние пользователя и отправляет пользователю вопрос"""
     if message.text.isdigit():
+        logger.info(f"Цена до {message.text}")
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data["cost_to"] = message.text
             bot.send_message(chat_id=message.chat.id,
@@ -115,5 +125,6 @@ def get_cost_to(message: Message) -> None:
             bot.set_state(message.from_user.id,
                           Menu.quantity_of_goods, message.chat.id)
     else:
+        logger.warning("Введено не число!")
         bot.send_message(message.from_user.id,
                          "Цена должна быть числом")
