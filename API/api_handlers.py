@@ -1,10 +1,12 @@
 import requests
 import json
+from loguru import logger
 from telebot.types import Message
 from loader import bot
 from config_data.config import URL
 
 
+@logger.catch
 def get_list_of_goods(category: str, payload: dict):
     """Функция получает данные из API"""
     url = "{}/{}".format(URL, category)
